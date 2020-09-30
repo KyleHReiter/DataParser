@@ -114,6 +114,13 @@ class TestDataParser(unittest.TestCase):
             # Act, Assert
             assert segment.compose() == segment
 
+    def test_segment_compose_should_raise_value_error_when_raw_text_is_invalid(self):
+        # Arrange
+        with patch("src.data_parser._segments_fields_iter", return_value=[]):
+            # Act, Assert
+            with self.assertRaises(ValueError):
+                dp.Segment('NO|WAYwork').compose()
+
     def test_segment_compose_should_update_name_when_called(self):
         # Arrange
         with patch("src.data_parser._segments_fields_iter", return_value=[]):

@@ -37,7 +37,12 @@ def read_in_chunks(file_object, chunk_size=1024):
 
 def process_data(piece):
     for segment in DATA_PARSER.digest(piece).segments_iter():
-        composed_segment = segment.compose()
+        composed_segment = None
+        try:
+            composed_segment = segment.compose()
+        except ValueError as err:
+            print(err)
+            continue
 
         # Generators cannot be iterated multiple times
         # Store segment fields into memory.

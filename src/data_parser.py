@@ -125,12 +125,25 @@ class Segment:
         Returns:
             Segment instance for ease of chaining calls.
 
+        Raises:
+            ValueError: If `raw_text` cannot be parsed.
+
         """
         # Factory method to compose message outside of constructor.
         # This reduces likelyhood of exceptions in constructor and
         # allows lazy loading of fields.
         if self.raw_text:
             self.name, raw_fields = self.raw_text.split('|', 1)
+            name_length = len(self.name)
+            name_length_max = 3
+
+            if not name_length == name_length_max:
+                raise ValueError(f"Segment name starting "
+                                 f"with '{self.name[:5]}...'" +
+                                 " raw text could not be parsed " +
+                                 f"expected '{name_length_max}' " +
+                                 f"characters but found '{name_length}'.")
+
             self.fields = list(_segments_fields_iter(raw_fields))
 
         return self
