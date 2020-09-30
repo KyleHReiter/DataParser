@@ -12,6 +12,7 @@ _FIELD_REGEX = re.compile(r"((?P<name>.{3})(?P<value>.*?)(\||$))")
 Field = collections.namedtuple('Field', 'name value')
 
 
+# Add data parser interface.
 class DataParserInterface:
     """
     Data parser interface.
@@ -21,21 +22,21 @@ class DataParserInterface:
         Segments iterator.
         """
 
-    def fields_iter(self) -> types.GeneratorType:
+    def segments_fields_iter(self) -> types.GeneratorType:
         """
-        Fields iterator.
+        Segments fields iterator.
+        """
+
+    def search_segments_iter(self,
+                             segment_name: str,
+                             field_names: list = None) -> types.GeneratorType:
+        """
+        Search segments iterator.
         """
 
     def digest(self, raw_text: str) -> object:
         """
         Digest.
-        """
-
-    def search_segments(self,
-                        segment_name: str,
-                        field_names: list = None) -> types.GeneratorType:
-        """
-        Search segments.
         """
 
 
@@ -44,43 +45,32 @@ class DataParser(DataParserInterface):
     Data parser.
     """
     def __init__(self):
-        self.segments = (segment for segment in [])
+        self._segments = (segment for segment in [])
 
     def segments_iter(self):
-        """Segments iteration.
+        """Segments iterator.
 
         Returns:
             A generator of segments.
 
         """
-        return self.segments
+        return self._segments
 
-    def fields_iter(self):
-        """Fields iteration.
+    def segments_fields_iter(self):
+        """Segments fields iterator.
 
         Returns:
-            A generator of fields.
+            A generator of segments fields.
 
         """
-        for segment in self.segments:
+        for segment in self._segments:
             for field in segment.fields:
                 yield field
 
-    def digest(self, raw_text: str):
-        """Digest.
-
-        Args:
-            raw_text: Raw text to digest.
-
-        Returns:
-            Data parser instance for ease of chaining calls.
-
-        """
-        self.segments = _segments_iter(raw_text)
-        return self
-
-    def search_segments(self, segment_name: str, field_names: list = None):
-        """Search segments.
+    def search_segments_iter(self,
+                             segment_name: str,
+                             field_names: list = None):
+        """Search segments iterator.
 
         Args:
             segment_name: Segment name to search.
@@ -94,15 +84,30 @@ class DataParser(DataParserInterface):
 
         """
         if field_names:
-            for segment in self.segments:
+            for segment in self._segments:
                 if segment.name == segment_name:
                     for field in segment.compose().fields:
                         if field.name in field_names:
                             yield segment
         else:
-            for segment in self.segments:
+            for segment in self._segments:
                 if segment.name == segment_name:
                     yield segment
+
+    def digest(self, raw_text: str):
+        """Digest raw text into segments iterator.
+        Digestion of raw text is required prior to any segments iterator call.
+        After the call of any segments iterator a new digest is required.
+
+        Args:
+            raw_text: Raw text to digest.
+
+        Returns:
+            Data parser instance for ease of chaining calls.
+
+        """
+        self._segments = _segments_iter(raw_text)
+        return self
 
 
 class Segment:
@@ -112,7 +117,7 @@ class Segment:
     def __init__(self, raw_text):
         self.raw_text = raw_text
         self.name = None
-        self.fields = (field for field in [])
+        self.fields = []
 
     def compose(self):
         """Compose.
@@ -122,9 +127,11 @@ class Segment:
 
         """
         # Factory method to compose message outside of constructor.
+        # This reduces likelyhood of exceptions in constructor and
+        # allows lazy loading of fields.
         if self.raw_text:
             self.name, raw_fields = self.raw_text.split('|', 1)
-            self.fields = _fields_iter(raw_fields)
+            self.fields = list(_segments_fields_iter(raw_fields))
 
         return self
 
@@ -145,7 +152,7 @@ class Segment:
 
 
 def _segments_iter(raw_text):
-    """Segments iteration.
+    """Segments iterator.
 
     Args:
         raw_text: Raw text containing segments.
@@ -166,8 +173,8 @@ def _segments_iter(raw_text):
             for m in re.finditer(_MESSAGE_REGEX, raw_text))
 
 
-def _fields_iter(raw_text):
-    """Fields iteration.
+def _segments_fields_iter(raw_text):
+    """Segments fields iterator.
 
     Args:
         raw_text: Raw text containing fields.
