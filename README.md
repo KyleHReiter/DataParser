@@ -39,7 +39,7 @@ for segment in DATA_PARSER.digest(raw_text).segments_iter():
     print_segment(segment.compose())
 ```
 
-### CLI:
+### Command Line Interface (CLI):
 
 Parse data CLI exists use help switch to see options.
 

@@ -3,7 +3,6 @@
 Data parser module.
 """
 import re
-import types
 import collections
 
 _MESSAGE_REGEX = re.compile(r"((?P<part>.{3}.*?)(\|\||$))")
@@ -12,35 +11,7 @@ _FIELD_REGEX = re.compile(r"((?P<name>.{3})(?P<value>.*?)(\||$))")
 Field = collections.namedtuple('Field', 'name value')
 
 
-# Add data parser interface.
-class DataParserInterface:
-    """
-    Data parser interface.
-    """
-    def segments_iter(self) -> types.GeneratorType:
-        """
-        Segments iterator.
-        """
-
-    def segments_fields_iter(self) -> types.GeneratorType:
-        """
-        Segments fields iterator.
-        """
-
-    def search_segments_iter(self,
-                             segment_name: str,
-                             field_names: list = None) -> types.GeneratorType:
-        """
-        Search segments iterator.
-        """
-
-    def digest(self, raw_text: str) -> object:
-        """
-        Digest.
-        """
-
-
-class DataParser(DataParserInterface):
+class DataParser():
     """
     Data parser.
     """

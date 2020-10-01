@@ -4,8 +4,9 @@ This module tests the data parser.
 """
 import unittest
 from unittest.mock import patch
-import src.data_parser as dp
 import types
+import src.data_parser as dp
+
 
 def create_segment_helper(name, fields):
     segment = dp.Segment(None)
@@ -19,7 +20,7 @@ class TestDataParser(unittest.TestCase):
     """
     def test_segments_iter_should_return_generator_when_called(self):
         # Arrange, Act, Assert
-        assert isinstance(dp._segments_iter(''), types.GeneratorType)
+        assert type(dp._segments_iter('')) is types.GeneratorType
 
     def test_segments_iter_should_raise_type_error_when_raw_text_is_none(self):
         # Arrange, Act, Assert
@@ -29,7 +30,7 @@ class TestDataParser(unittest.TestCase):
     def test_segments_iter_should_return_zero_segments_when_raw_text_is_empty(self):
         # Arrange, Act, Assert
         assert len(list(dp._segments_iter(''))) == 0
-    
+
     def test_segments_iter_should_return_zero_segments_when_raw_text_is_double_pipe(self):
         # Arrange, Act, Assert
         assert len(list(dp._segments_iter('||'))) == 0
@@ -45,32 +46,32 @@ class TestDataParser(unittest.TestCase):
     def test_segments_iter_should_return_single_segment_when_raw_text_contains_trailing_double_pipe(self):
         # Arrange, Act, Assert
         assert len(list(dp._segments_iter('MTY|FOOspam||'))) == 1
-    
+
     def test_segments_iter_should_return_segment_when_raw_text_contains_segment(self):
         # Arrange, Act, Assert
         assert type(list(dp._segments_iter('FOOspam'))[0]) == dp.Segment
 
     def test_segments_fields_iter_should_return_generator_when_called(self):
         # Arrange, Act, Assert
-        assert isinstance(dp._segments_fields_iter(''), types.GeneratorType)
+        assert type(dp._segments_fields_iter('')) is types.GeneratorType
 
     def test_segments_fields_iter_should_raise_type_error_when_raw_text_is_none(self):
         # Arrange, Act, Assert
         with self.assertRaises(TypeError):
             dp._segments_fields_iter(None)
-    
+
     def test_segments_fields_iter_should_return_zero_segments_when_raw_text_is_empty(self):
         # Arrange, Act, Assert
         assert len(list(dp._segments_fields_iter(''))) == 0
-    
+
     def test_segments_fields_iter_should_return_zero_segments_when_raw_text_is_single_pipe(self):
         # Arrange, Act, Assert
         assert len(list(dp._segments_fields_iter('|'))) == 0
-    
+
     def test_segments_fields_iter_should_return_multiple_fields_when_raw_text_contains_single_pipe(self):
         # Arrange, Act, Assert
         assert len(list(dp._segments_fields_iter('FOOspam|BAReggs'))) == 2
-    
+
     def test_segments_fields_iter_should_return_field_when_raw_text_contains_field(self):
         # Arrange, Act, Assert
         assert type(list(dp._segments_fields_iter('FOOspam'))[0]) == dp.Field
@@ -93,15 +94,15 @@ class TestDataParser(unittest.TestCase):
 
         # Act, Assert
         assert dp.Segment(raw_text).raw_text == raw_text
-    
+
     def test_segment_should_set_name_as_none_when_initialized(self):
         # Arrange, Act, Assert
         assert dp.Segment('MTY|FOOspam').name == None
 
     def test_segment_should_set_fields_to_list_when_initialized(self):
         # Arrange, Act, Assert
-        assert isinstance(dp.Segment('MTY|FOOspam').fields, list)
-    
+        assert type(dp.Segment('MTY|FOOspam').fields) is list
+
     def test_segment_should_set_fields_as_empty_when_initialized(self):
         # Arrange, Act, Assert
         assert len(list(dp.Segment('MTY|FOOspam').fields)) == 0
@@ -117,6 +118,7 @@ class TestDataParser(unittest.TestCase):
     def test_segment_compose_should_raise_value_error_when_raw_text_is_invalid(self):
         # Arrange
         with patch("src.data_parser._segments_fields_iter", return_value=[]):
+
             # Act, Assert
             with self.assertRaises(ValueError):
                 dp.Segment('NO|WAYwork').compose()
@@ -129,7 +131,7 @@ class TestDataParser(unittest.TestCase):
 
             # Assert
             assert segment.name == 'MTY'
-    
+
     def test_segment_compose_should_call_segments_fields_iter_with_field_raw_text_when_called(self):
         # Arrange
         with patch("src.data_parser._segments_fields_iter", return_value=[]) as iter_segments_fields_mock:
@@ -185,8 +187,8 @@ class TestDataParser(unittest.TestCase):
 
     def test_data_parser_should_set_segments_to_generator_when_initialized(self):
         # Arrange, Act, Assert
-        assert isinstance(dp.DataParser()._segments, types.GeneratorType)
-    
+        assert type(dp.DataParser()._segments) is types.GeneratorType
+
     def test_data_parser_should_set_segments_as_empty_when_initialized(self):
         # Arrange, Act, Assert
         assert len(list(dp.DataParser()._segments)) == 0
@@ -222,7 +224,7 @@ class TestDataParser(unittest.TestCase):
 
             # Assert
             assert data_parser._segments == segments
-    
+
     def test_data_parser_search_segments_iter_should_find_segments_when_searched_by_segment_name(self):
         # Arrange
         segment = create_segment_helper('GRL', [dp.Field('BAZ', 'sir_robin')])
